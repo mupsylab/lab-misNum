@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="/assets/js/md5.js"></script>
+    <script type="text/javascript" src="/assets/js/jquery.js"></script>
+    <script type="text/javascript" src="/assets/js/jsencrypt.js"></script>
+
+    <!-- load template -->
+    <template></template>
+    <script type="text/javascript">
+        // $.ajaxSetup({
+        //     cache: false //关闭AJAX相应的缓存
+        // });
+        $(document).ready(function () {
+            $("template").load("../index.html", false, function () {
+                load.js(["index.js"]);
+                // $.getScript("index.js");
+            });
+        });
+    </script>
+    <!-- jspsych核心 -->
+    <script src="/assets/mupsy/mupsy.js"></script>
+    <link href="/assets/mupsy/mupsy.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+</body>
+
+</html>
