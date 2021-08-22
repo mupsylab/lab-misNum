@@ -83,7 +83,7 @@ function getTrial(sort = 0) {
     };
 }
 
-function getPrac(timeVar, pracNum, pracAcc) { 
+function getPrac(timeVar, pracNum, pracAcc) {
     return [{
         timeline: [{ // 指导语
             timeline: [{
@@ -92,7 +92,7 @@ function getPrac(timeVar, pracNum, pracAcc) {
                     let start = "<p class='header'>如果您已经完成理解了实验任务，按继续键，进入正式实验。</p> \
                     <p class='header'>下面是1对3任务，请您记住如下联结:</p>",
                         end = "<p class='footer'>按 继续 进入练习阶段</p><div>";
-                    sessionStorage.setItem("type", "formal");
+                    sessionStorage.setItem("type", "prac");
                     blockNum += 1;
                     trialNum = 0;
                     return [start + getMatchWord(sti.match) + end + getKeys()];
@@ -101,7 +101,7 @@ function getPrac(timeVar, pracNum, pracAcc) {
                 allow_backward: false,
                 button_label_previous: "返回",
                 button_label_next: "继续",
-                on_finish: function() { 
+                on_finish: function () {
                     $("body").css("cursor", "none");
                 }
             }],
@@ -131,27 +131,27 @@ function getPrac(timeVar, pracNum, pracAcc) {
         }, {
             timeline: [{
                 type: "html-button-response",
-                stimulus: function() {
+                stimulus: function () {
                     let data = jsPsych.data.get().filter({ save: true }).last(pracNum);
                     let acc = data.select("acc").mean();
                     let rt = data.select("rt").mean();
                     return `
                     <p>你的正确率为：${acc * 100}%</p>
-                    <p>你的平均反应时为：${ rt } ms</p>
+                    <p>你的平均反应时为：${rt} ms</p>
                     <p>接下来是休息时间，当你结束休息后，你可以点击 结束休息 按钮或者按 空格键 继续</p>
                     <p>您当前休息了<span id="iii">150</span>秒</p>`
                 },
                 choices: ["结束休息"],
                 on_load: function () {
                     $("body").css("cursor", "default");
-                    $(document.body).keypress(function(a){ 
-                        if(a.originalEvent.key == " ") { 
+                    $(document.body).keypress(function (a) {
+                        if (a.originalEvent.key == " ") {
                             $(".jspsych-html-button-response-button").click()
                         }
                     });
-                    let tmpTime = setInterval(function() { 
+                    let tmpTime = setInterval(function () {
                         $("#iii").text(parseInt($("#iii").text()) - 1);
-                        if(parseInt($("#iii").text()) < 1) { 
+                        if (parseInt($("#iii").text()) < 1) {
                             $("#iii").parent().text("当前限定休息时间已到达，如果还未到达状态，请继续休息");
                             clearInterval(parseInt(sessionStorage.getItem("tmpTime")));
                         }
@@ -171,7 +171,7 @@ function getPrac(timeVar, pracNum, pracAcc) {
                 }
             }
         }],
-        timeline_variables: jsPsych.randomization.shuffleNoRepeats(timeVar, function(x ,y) { 
+        timeline_variables: jsPsych.randomization.shuffleNoRepeats(timeVar, function (x, y) {
             return x.img === y.img && x.word === y.word;
         }).splice(0, pracNum),
         loop_function: function () {
@@ -190,89 +190,91 @@ function getPrac(timeVar, pracNum, pracAcc) {
     }]
 }
 
-function getFormal(timeVar, formNum) { 
+function getFormal(timeVar, formNum) {
     let subTimeline = [];
-    while(timeVar.length > 0) { 
-        let subTV = timeVar.splice(0, Math.min(formNum, timeVar.length));
-        subTimeline.push({
+    let subTV = timeVar.splice(0, Math.min(formNum, timeVar.length));
+    subTimeline.push({
+        timeline: [{
             timeline: [{
-                timeline: [{
-                    type: "instructions",
-                    pages: function () {
-                        let start = "<p class='header'>如果您已经完成理解了实验任务，按继续键，进入正式实验。</p> \
+                type: "instructions",
+                pages: function () {
+                    let start = "<p class='header'>如果您已经完成理解了实验任务，按继续键，进入正式实验。</p> \
                         <p class='header'>下面是1对" + jsPsych.timelineVariable("misNum") + "任务，请您记住如下联结:</p>",
-                            end = "<p class='footer'>按 继续 进入正式实验</p><div>";
-                        sessionStorage.setItem("type", "formal");
-                        blockNum += 1;
-                        trialNum = 0;
-                        return [start + getMatchWord(sti.match) + end + getKeys()];
-                    },
-                    show_clickable_nav: true,
-                    allow_backward: false,
-                    button_label_previous: "返回",
-                    button_label_next: "继续",
-                    on_finish: function() { 
-                        $("body").css("cursor", "none");
-                    }
-                }],
-                conditional_function: function() { 
-                    if (parseInt(sessionStorage.getItem("formIns")) || sessionStorage.getItem("formIns") == "null") {
-                        sessionStorage.setItem("formIns", 0);
-                        return true
-                    } else {
-                        return false
-                    }
-                }
-            }, getTrial(), {
-                timeline: [{
-                    type: "html-button-response",
-                    stimulus: function() {
-                        let data = jsPsych.data.get().filter({ save: true }).last(formNum);
-                        let acc = data.select("acc").mean();
-                        let rt = data.select("rt").mean();
-                        return `
-                        <p>你当前还剩余${12 - blockNum}组实验</p>
-                        <p>你的正确率为：${acc * 100}%</p>
-                        <p>你的平均反应时为：${ rt } ms</p>
-                        <p>接下来是休息时间，当你结束休息后，你可以点击 结束休息 按钮或者按 空格键 继续。</p>
-                        <p>您当前休息了<span id="iii">150</span>秒</p>`
-                    },
-                    choices: ["结束休息"],
-                    on_load: function() {
-                        $("body").css("cursor", "default");
-                        $(document.body).keypress(function(a){ 
-                            if(a.originalEvent.key == " ") { 
-                                $(".jspsych-html-button-response-button").click()
-                            }
-                        });
-                        let tmpTime = setInterval(function() { 
-                            $("#iii").text(parseInt($("#iii").text()) - 1);
-                            if(parseInt($("#iii").text()) < 1) { 
-                                $("#iii").parent().text("当前限定休息时间已到达，如果还未到达状态，请继续休息");
-                                clearInterval(parseInt(sessionStorage.getItem("tmpTime")));
-                            }
-                        }, 1000);
-                        sessionStorage.setItem("tmpInter", tmpTime);
-                    },
-                    on_finish: function() {
-                        $(document.body).unbind();
-                        clearInterval(parseInt(sessionStorage.getItem("tmpInter")));
-                    }
-                }],
-                conditional_function: function () {
-                    if (trialNum == formNum) {
-                        sessionStorage.setItem("formIns", "1");
-                        return true
-                    } else {
-                        return false
-                    }
+                        end = "<p class='footer'>按 继续 进入正式实验</p><div>";
+                    sessionStorage.setItem("type", "formal");
+                    blockNum += 1;
+                    trialNum = 0;
+                    return [start + getMatchWord(sti.match) + end + getKeys()];
+                },
+                show_clickable_nav: true,
+                allow_backward: false,
+                button_label_previous: "返回",
+                button_label_next: "继续",
+                on_finish: function () {
+                    $("body").css("cursor", "none");
                 }
             }],
-            timeline_variables: jsPsych.randomization.shuffleNoRepeats(subTV, function(x ,y) { 
-                return x.img === y.img && x.word === y.word
-            })
-        });
-    }
+            conditional_function: function () {
+                if (parseInt(sessionStorage.getItem("formIns")) || sessionStorage.getItem("formIns") == "null") {
+                    sessionStorage.setItem("formIns", 0);
+                    return true
+                } else {
+                    return false
+                }
+            }
+        }, getTrial(), {
+            timeline: [{
+                type: "html-button-response",
+                stimulus: function () {
+                    let data = jsPsych.data.get().filter({ save: true }).last(formNum);
+                    let acc = data.select("acc").mean();
+                    let rt = data.select("rt").mean();
+                    return `
+                        <p>你当前还剩余${12 - blockNum}组实验</p>
+                        <p>你的正确率为：${acc * 100}%</p>
+                        <p>你的平均反应时为：${rt} ms</p>
+                        <p>接下来是休息时间，当你结束休息后，你可以点击 结束休息 按钮或者按 空格键 继续。</p>
+                        <p>您当前休息了<span id="iii">150</span>秒</p>`
+                },
+                choices: ["结束休息"],
+                on_load: function () {
+                    $("body").css("cursor", "default");
+                    $(document.body).keypress(function (a) {
+                        if (a.originalEvent.key == " ") {
+                            $(".jspsych-html-button-response-button").click()
+                        }
+                    });
+                    let tmpTime = setInterval(function () {
+                        $("#iii").text(parseInt($("#iii").text()) - 1);
+                        if (parseInt($("#iii").text()) < 1) {
+                            $("#iii").parent().text("当前限定休息时间已到达，如果还未到达状态，请继续休息");
+                            clearInterval(parseInt(sessionStorage.getItem("tmpTime")));
+                        }
+                    }, 1000);
+                    sessionStorage.setItem("tmpInter", tmpTime);
+                },
+                on_finish: function () {
+                    $(document.body).unbind();
+                    clearInterval(parseInt(sessionStorage.getItem("tmpInter")));
+                }
+            }],
+            conditional_function: function () {
+                if (trialNum == formNum) {
+                    sessionStorage.setItem("formIns", "1");
+                    return true
+                } else {
+                    return false
+                }
+            }
+        }],
+        timeline_variables: subTV,
+        sample: {
+            type: "custom",
+            fn: function(t) {
+                return jsPsych.randomization.shuffle(t);
+            }
+        }
+    });
     return subTimeline;
 }
 // 指导语中联结呈现部分

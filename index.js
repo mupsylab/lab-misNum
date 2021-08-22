@@ -16,7 +16,7 @@ let timeline = [];
 let version = "v5"; // 版本号
 let info = {}; // 被试信息
 let subjectID = "sv02"; // 本次实验ID
-let recepetion = 8; // 循环次数
+let recepetion = 2; // 循环次数
 let mismatch = [1, 2, 3]; // 不匹配 任务数量
 
 let formNum = 96; // 单个block所包含的试次总数
@@ -71,8 +71,8 @@ let tmpArrW = order(words); // 列出 每行每列均不相等的情况
 let sti = com(img, jsPsych.utils.deepCopy(tmpArrW), [1,2,3]); // 进行抽样匹配
 let timVar = [];
 getVar(sti).forEach(v => { 
-    timVar.push(jsPsych.randomization.repeat(v, recepetion * 48 / v.length));
-});
+    timVar.push(jsPsych.randomization.repeat(v, Math.max(formNum, 48) / v.length));
+}); // 给变量填充为 48 个
 
 timeline.push(
     { // 进入全屏
@@ -155,11 +155,13 @@ timeline.push(
         load.plugins(aa);
         jsPsych.addNodeToEndOfTimeline({
             timeline: aa
-        })
+        });
         sorts[subjID % sorts.length].forEach(v => {
-            jsPsych.addNodeToEndOfTimeline({
-                timeline: getFormal(jsPsych.utils.deepCopy(timVar[v - 1]), formNum)
-            })
+            for(let i = 0; i < 4; i++) { 
+                jsPsych.addNodeToEndOfTimeline({
+                    timeline: getFormal(jsPsych.utils.deepCopy(timVar[v - 1]), formNum)
+                });
+            }
         });
         info["series"] = day;
     }
@@ -187,6 +189,7 @@ timeline.push(
             }],
             conditional_function: function () {
                 if (parseInt(sessionStorage.getItem("errorStudy"))) {
+                    sessionStorage.setItem("errorStudy", "0");
                     return true
                 } else {
                     return false
