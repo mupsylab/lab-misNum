@@ -281,11 +281,12 @@ function getFormal(timeVar, formNum) {
 function getMatchWord(arr) {
     if (arr.length && !arr.length) return 0;
     let a = "";
-    arr.forEach(v => {
+    while(arr.length > 0) {
+        let v = arr.splice(Math.floor(Math.random() * arr.length), 1)[0];
         a = a + `<p class="content">
-        <img src="${v.img}" >--- <span class="word">${v.word}</span>
-        </p>`;
-    });
+            <img src="${v.img}" >--- <span class="word">${v.word}</span>
+            </p>`;
+    };
     return "<div class='box'>" + a + "</div>";
 }
 // 指导语中按键部分

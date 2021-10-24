@@ -2,14 +2,15 @@ setwd("/www/wwwroot/lab/lab/matching/data")
 rm(list = ls())
 library(tidyverse)
 
-df.OL <- read.csv("sv02_original.csv")
+raw_data <- read.csv("sv02_original.csv")
 
 # translate integer
-# df.OL$rt <- as.double(levels(as.factor(df.OL$rt))[as.factor(df.OL$rt)])
-df.OL$rt <- as.numeric(as.character(df.OL$rt))
-df.OL$acc <- as.integer(df.OL$acc)
+raw_data$rt <- as.numeric(as.character(raw_data$rt))
+raw_data$rt <- as.numeric(as.character(raw_data$rt))
+raw_data$acc <- as.integer(raw_data$acc)
 
-ra <- df.OL %>%
+# long data
+raw_data %>%
     dplyr::filter(
         blockType == "formal"
     ) %>%
@@ -18,18 +19,40 @@ ra <- df.OL %>%
         shapeEn, shapeNameEn, characterNameEn
     ) %>%
     dplyr::mutate(
-        rt = mean(data$rt, na.rm = T),
+        mean_rt = mean(data$rt, na.rm = T),
         med_rt = median(data$rt, na.rm = T),
         acc = mean(data$acc, ma.rm = T)
     ) %>%
     dplyr::select(
-        subj_idx, series, condition, misNum,
-        shapeEn, shapeNameEn, characterNameEn,
-        rt, acc, med_rt
-    )
-write.csv(ra, file = "sv02_analysis_rt.csv", row.names = F)
+        !c(data)
+    ) %>%
+    write.csv(file = "sv02_analysis_rt_long.csv", row.names = F)
 
-crd <- df.OL %>%
+# wide data
+raw_data %>%
+    dplyr::filter(
+        blockType == "formal"
+    ) %>%
+    dplyr::nest_by(
+        subj_idx, series, condition, misNum,
+        shapeNameEn, characterNameEn
+    ) %>%
+    dplyr::mutate(
+        mean_rt = mean(data$rt, na.rm = T),
+        med_rt = median(data$rt, na.rm = T),
+        acc = mean(data$acc, ma.rm = T)
+    ) %>%
+    dplyr::select(
+        !c(data, mean_rt, acc)
+    ) %>%
+    pivot_wider(
+        names_from = c(misNum, condition, shapeNameEn, characterNameEn),
+        values_from = med_rt
+    ) %>%
+    write.csv(file = "sv02_analysis_rt_wide.csv", row.names = F)
+
+# correcting the rt and calculation Dprime
+raw_data %>%
     dplyr::filter(
         blockType == "formal"
     ) %>%
@@ -60,5 +83,5 @@ crd <- df.OL %>%
         subj_idx, series, misNum,
         shapeNameEn, characterNameEn,
         CorrectingRT, Dprime
-    )
-write.csv(crd, file = "sv02_analysis_dprime.csv", row.names = F)
+    ) %>%
+    write.csv(file = "sv02_dprime.csv", row.names = F)
