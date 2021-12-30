@@ -43,13 +43,19 @@ function getTrial(sort = 0) {
         choices: [answer[0], answer[1]], // 0 always is match condition
         response_start_time: 1100,
         trial_duration: function () {
+            let tmpTime = 0;
             if (sessionStorage.getItem("type") == "prac") {
-                return 1100 + 1000 + Math.floor(Math.random() * 500);
+                tmpTime = 1100 + 1000 + Math.floor(Math.random() * 500);
             } else {
-                return 1100 + 2000;
+                tmpTime =  1100 + 2000;
             }
+            sessionStorage.setItem("tmpTime", tmpTime);
+            return tmpTime;
         }, // 刺激呈现时间
         background_color: "grey", // 背景灰色
+        on_load:function() { 
+            sessionStorage.setItem("trialStart", jsPsych.totalTime());
+        },
         on_finish: function (data) {
             trialNum += 1;
             // trial information
@@ -79,6 +85,11 @@ function getTrial(sort = 0) {
             data.acc = ((answer[0] === data.key_press && data.condition === "match") || (answer[1] === data.key_press && data.condition === "mismatch")) ? 1 : 0;
             // DDM
             data.response = data.acc;
+
+            // robot info
+            data.trialEnd = jsPsych.totalTime();
+            data.trialStart = JSON.parse(sessionStorage.getItem("trialStart"));
+            data.trialTheoreticalTime = JSON.parse(sessionStorage.getItem("tmpTime"));
         }
     };
 }
@@ -89,7 +100,7 @@ function getPrac(timeVar, pracNum, pracAcc) {
             timeline: [{
                 type: "instructions",
                 pages: function () {
-                    let start = "<p class='header'>如果您已经完成理解了实验任务，按继续键，进入正式实验。</p> \
+                    let start = "<p class='header'>如果您已经完成理解了实验任务，按继续键，进入练习阶段。</p> \
                     <p class='header'>下面是1对3任务，请您记住如下联结:</p>",
                         end = "<p class='footer'>按 继续 进入练习阶段</p><div>";
                     sessionStorage.setItem("type", "prac");
@@ -279,12 +290,14 @@ function getFormal(timeVar, formNum) {
 }
 // 指导语中联结呈现部分
 function getMatchWord(arr) {
-    if (arr.length && !arr.length) return 0;
+    // console.log(arr);
+    let arr1 = jsPsych.utils.deepCopy(arr);
+    if (arr1.length && !arr1.length) return 0;
     let a = "";
-    while(arr.length > 0) {
-        let v = arr.splice(Math.floor(Math.random() * arr.length), 1)[0];
+    while(arr1.length > 0) {
+        let v = arr1.splice(Math.floor(Math.random() * arr1.length), 1)[0];
         a = a + `<p class="content">
-            <img src="${v.img}" >--- <span class="word">${v.word}</span>
+            <img src="${v.img}" > --- <span class="word">${v.word}</span>
             </p>`;
     };
     return "<div class='box'>" + a + "</div>";

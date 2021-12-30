@@ -9,6 +9,55 @@ raw_data$rt <- as.numeric(as.character(raw_data$rt))
 raw_data$rt <- as.numeric(as.character(raw_data$rt))
 raw_data$acc <- as.integer(raw_data$acc)
 
+raw_data <- raw_data %>%
+    dplyr::filter(
+        blockType == "formal"
+    )
+    
+raw_data <- raw_data %>%
+    dplyr::group_by(
+        subj_idx, misNum
+    ) %>%
+    dplyr::mutate(
+        sd = sd(
+            raw_data$rt[
+              subj_idx == raw_data$subj_idx &
+                misNum == raw_data$misNum
+              ],
+            na.rm = T
+        ),
+        mean = mean(
+          raw_data$rt[
+            subj_idx == raw_data$subj_idx &
+                misNum == raw_data$misNum
+          ],
+          na.rm = T
+        ),
+        z = (rt - mean) / sd,
+        sum = sum(
+          raw_data$rt[
+            subj_idx == raw_data$subj_idx &
+                misNum == raw_data$misNum
+          ],
+          na.rm = T
+        ),
+        n = length(
+          raw_data$rt[
+            subj_idx == raw_data$subj_idx &
+                misNum == raw_data$misNum
+          ]
+        )
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(
+        abs(z) <= 2
+    ) %>%
+    dplyr::select(
+        !c("sd", "mean", "z", "sum", "n")
+    )
+
+write.csv(raw_data, file = "sv02_original_filter.csv", row.names = F)
+
 # long data
 raw_data %>%
     dplyr::filter(

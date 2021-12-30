@@ -1,0 +1,82 @@
+```{r}
+setwd("/www/wwwroot/lab/lab/matching/data")
+library(tidyverse)
+rm(list = ls())
+```
+# 旧版数据
+首先是，旧版程序的呈现
+```{r}
+o1 <- read.csv("origin/sv020005_v4_day1.csv") %>%
+    dplyr::filter(
+        blockType == "formal"
+    ) %>%
+    dplyr::group_by(
+        subj_idx, series, shapeEn, shapeNameEn,
+        characterNameEn, misNum, condition, block
+    ) %>%
+    dplyr::summarise(
+        n = n()
+    )
+write.csv(o1, file = "description/ori1.csv", row.names = F)
+
+o2 <- read.csv("origin/sv020005_v4_day2.csv") %>%
+    dplyr::filter(
+        blockType == "formal"
+    ) %>%
+    dplyr::group_by(
+        subj_idx, series, shapeEn, shapeNameEn,
+        characterNameEn, misNum, condition, block
+    ) %>%
+    dplyr::summarise(
+        n = n()
+    )
+write.csv(o2, file = "description/ori2.csv", row.names = F)
+```
+通过观察, `p` 这个列表，发现在一个block当中，各个条件出现不平均，也就是说，匹配和不匹配的数量不一致，且不匹配条件下，各个图形之间出现数量也不一致，会造成不必要的误差，比如被试不能够按照指导语要求进行实验，产生影响。
+
+> 还有一个错误，`misNum`列当中显示错误，所造成的失误。不过很遗憾，服务器所保存的数据当中，并未反应这一点，因为通过人工方式修正了。
+
+# 新版数据
+```{r}
+n1 <- read.csv("origin/sv020001_t7_day1.csv") %>%
+    dplyr::filter(
+        blockType == "formal"
+    ) %>%
+    dplyr::group_by(
+        subj_idx, series, shapeEn, shapeNameEn,
+        characterNameEn, misNum, condition, blockNum
+    ) %>%
+    dplyr::summarise(
+        n = n()
+    )
+write.csv(n1, file = "description/new1.csv", row.names = F)
+
+n2 <- read.csv("origin/sv020001_t7_day2.csv") %>%
+    dplyr::filter(
+        blockType == "formal"
+    ) %>%
+    dplyr::group_by(
+        subj_idx, series, shapeEn, shapeNameEn,
+        characterNameEn, misNum, condition, blockNum
+    ) %>%
+    dplyr::summarise(
+        n = n()
+    )
+write.csv(n2, file = "description/new2.csv", row.names = F)
+```
+
+## 再次验证
+```{r}
+n12 <- read.csv("origin/sv020001_t8_day1.csv") %>%
+    dplyr::filter(
+        blockType == "formal"
+    ) %>%
+    dplyr::group_by(
+        subj_idx, series, shapeEn, shapeNameEn,
+        characterNameEn, misNum, condition, blockNum
+    ) %>%
+    dplyr::summarise(
+        n = n()
+    )
+write.csv(n12, file = "description/new12.csv", row.names = F)
+```

@@ -13,7 +13,7 @@ load.js([
 ])
 
 let timeline = [];
-let version = "v5"; // 版本号
+let version = "v6"; // 版本号
 let info = {}; // 被试信息
 let subjectID = "sv02"; // 本次实验ID
 let recepetion = 2; // 循环次数
@@ -293,13 +293,14 @@ mupsyStart({
             // });
             return ["subj_idx", "Name", "Sex", "BirthYear", "Education", "PhoneNumber", "shapeFileName", "shape",
                 "shapeEn", "shapeName", "shapeNameEn", "characterName", "characterNameEn", "misNum", "correctResp", "subjResp", "series", "condition",
-                "blockNum", "blockType", "trialNum", "response", "acc", "rt", "time_elapsed"];
+                "blockNum", "blockType", "trialNum", "response", "acc", "rt", "time_elapsed", "trialStart", "trialEnd", "trialTheoreticalTime"];
         })());
         mupsyEnd({
             save: true,
             id: info["subj_idx"] + "_" + version + "_day" + day,
             data: data,
-            end_html: msg
+            end_html: msg,
+            origin: true
         });
     }
 });
