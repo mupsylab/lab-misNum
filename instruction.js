@@ -41,7 +41,14 @@ function instruction() {
         show_clickable_nav: true,
         allow_backward: true,
         button_label_previous: "返回",
-        button_label_next: "继续"
+        button_label_next: "继续",
+        on_load: function() { 
+            $(".content_box").css({
+                width: $("body").width() * 0.75,
+                height: $("body").height() * 0.60
+            });
+            
+        }
     }; // 指导语 分为了 三页
     return instr;
 }

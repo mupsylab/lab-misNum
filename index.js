@@ -78,23 +78,55 @@ timeline.push(
     { // 进入全屏
         type: 'fullscreen',
         fullscreen_mode: true,
-        message: "<p style='font: bold 42px 微软雅黑; color: #B22222'>\
-                       欢迎参与我们的实验</p>\
-                       <p style='font: 30px 微软雅黑; color: white'><br/>\
-                       <单击下方 我同意 进入实验程序><br/><b>实验过程中请勿退出全屏</b>\
-                       <br/><br/></p>\
-                       <p style='font: 24px 华文中宋; color: grey'>\
-                       Mupsy在线实验室<br/>2021年</p>",
-        button_label: "我同意",
+        message: `
+        <style>
+            p {
+                margin: 0 0 0 0;
+            }
+            .full_title { 
+                font: bold 42px 微软雅黑; 
+                color: #B22222;
+            }
+
+            .full_instruction { 
+                font: 30px 微软雅黑; 
+                color: white;
+            }
+
+            .full_lab { 
+                font: 24px 华文中宋; 
+                color: #cbcbcb;
+            }
+        </style>
+        <p class="full_title">欢迎参与我们的实验</p>
+        <p class="full_instruction"><单击下方 继续 进入实验程序></p>
+        <p class="full_lab">Mupsy在线实验室</p>
+        `,
+        button_label: "继续",
+        on_load: function() { 
+            let height = $("body").height() * 0.75;
+            let width = $("body").width() * 0.75;
+            $(".full_title").css({
+                fontSize: `${Math.min(width * 0.33, width / $(".full_title").text().length)}px`
+            });
+            $(".full_instruction").css({
+                fontSize: `${Math.min(width * 0.33, width / $(".full_instruction").text().length)}px`
+            });
+            $(".full_lab").css({
+                fontSize: `${Math.min(width * 0.07, width / $(".full_lab").text().length)}px`
+            });
+        },
         on_finish: function () {
             landScape();
             if (window.orientation === 180 || window.orientation === 0) $("#orientLayer")[0].style.display = "block";
             window.addEventListener("onorientationchange" in window ? "orientationchange" : "resize", function () {
                 if (window.orientation === 180 || window.orientation === 0) {
                     $("#orientLayer")[0].style.display = "block";
+                    jsPsych.pauseExperiment();
                 }
                 if (window.orientation === 90 || window.orientation === -90) {
                     $("#orientLayer")[0].style.display = "none";
+                    jsPsych.resumeExperiment();
                 }
             }, false);
         }
@@ -111,42 +143,31 @@ timeline.push(
     on_success: function (file) {
         console.log('Loaded: ', file);
     }
-}, { // 实验编号填写
+}, {
     type: "survey-html-form",
     preamble: "<p style =' color : white'>你分配到的实验编号是</p>",
-    html: "<p><input name='Q0' type='text' value='" + subjectID + "' disabled='disabled' /></p> \
-    <p><input name='Q1' type='number' value='' min='1' required/></p>\
-    <p id='numberf' style='font-size: 20px; color: white;'>你的最终编号是：</p>",
+    html: "<p><input name='Q0' type='text' value='" + subjectID + "' disabled='disabled' /> \
+    <input name='Q1' type='number' value='' min='1' required/></p>\
+    <p id='numberf' style='font-size: 20px; color: white;'>你的最终编号是：</p>\
+    <p>你完整参与本次实验次数是<input name='Q2' type='number' value='0' min='0' style='width: 50px;' required/></p>",
     button_label: "继续",
     on_load: function () {
-        $("input[type=number]").on("input", function (e) {
+        $("input[name=Q1]").on("input", function (e) {
             $("#numberf").html("你的最终编号是：" + $("input[name=Q0]").val() + e.currentTarget.value.toString().padStart(4, "0"));
             info["subj_idx"] = $("input[name=Q0]").val() + $("input[name=Q1]").val().toString().padStart(4, "0");
         });
+        $("input[name=Q3").on("input", function(e) { 
+            info["series"] = $("input[name=Q2]").val();
+        })
     },
     on_finish: function () {
         if (localStorage.getItem(info["subj_idx"])) {
             info = JSON.parse(localStorage.getItem(info["subj_idx"]));
         }
     }
-}, { // 实验次数填写
-    type: "survey-html-form",
-    preamble: "<p style = 'color : white'>你完整参与本次实验的次数是</p>",
-    html: function () {
-        let data = localStorage.getItem(info["subj_idx"]) ? JSON.parse(localStorage.getItem(info["subj_idx"]))["series"] : 0;
-        return "<p><input name='Q0' type='number' value='" + data.toString() + "' min='0' required/></p>"
-    },
-    button_label: "继续",
-    on_finish: function (data) {
-        info["series"] = data.response.Q0;
-    }
 }, {
     type: "call-function",
     func: function () {
-        if ($(window).outerHeight() < 500) {
-            alert("你设备不支持实验，请换一个高分辨率的设备，谢谢。");
-            window.location = "";
-        }
         // 这里放需要依据被试编号确定的各种参数值
         subjID = parseInt(info["subj_idx"].replace(subjectID, "")); // 被试ID
         answer = answers[subjID % answers.length];

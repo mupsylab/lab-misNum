@@ -21,6 +21,7 @@ a.innerHTML = `
 .box {
     overflow-y: scroll;
     border: 1px solid white;
+    height: 200px;
 }
 
 .footer {
