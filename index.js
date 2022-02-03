@@ -159,18 +159,40 @@ timeline.push(
     <p>你完整参与本次实验次数是<input name='Q2' type='number' value='0' min='0' style='width: 50px;' required/></p>",
     button_label: "继续",
     on_load: function () {
-        $("input[name=Q1]").on("input", function (e) {
+        $("input[type=number]").on("input", function (e) {
             $("#numberf").html("你的最终编号是：" + $("input[name=Q0]").val() + e.currentTarget.value.toString().padStart(4, "0"));
             info["subj_idx"] = $("input[name=Q0]").val() + $("input[name=Q1]").val().toString().padStart(4, "0");
-        });
-        $("input[name=Q3").on("input", function(e) { 
             info["series"] = $("input[name=Q2]").val();
-        })
+        });
+        let goOn = 0, keep = true;
+        while(keep) {
+            goOn += 1;
+            let a = new XMLHttpRequest();
+            a.open("GET", `./data/origin/${subjectID + goOn.toString().padStart(4, "0")}_${version}_day${day}.csv`, false);
+            a.send();
+            // console.log(a.status);
+            if (a.status != 200) { 
+                keep = false;
+                $("input[name=Q1]").val(goOn).trigger("input");
+                // console.log(a);
+            }
+        }
     },
     on_finish: function () {
         if (localStorage.getItem(info["subj_idx"])) {
             info = JSON.parse(localStorage.getItem(info["subj_idx"]));
         }
+        $.ajax({
+            url: "/common/recevice.php",
+            type: "POST",
+            data: "",
+            id: `${subjectID + goOn.toString().padStart(4, "0")}_${version}_day${day}`,
+            path: (function () {
+                let p = window.location.pathname.split("/");
+                p.pop();
+                return p.join("/");
+            })()
+        })
     }
 }, {
     type: "call-function",
