@@ -1,8 +1,13 @@
 function getTrial(sort = 0) {
     return {
         type: "psychophysics",
+        canvas_height: $("#displayBox").height() * 0.8,
+        canvas_width: $("#displayBox").width() * 0.8,
+        origin_center: false,
+        background_color: "grey", // 背景灰色
         stimuli: function () {
             let a = [];
+            let height = $("#displayBox").height() * 0.8;
             switch (sort) {
                 default:
                     // 同时
@@ -10,8 +15,8 @@ function getTrial(sort = 0) {
                         obj_type: 'cross',
                         startX: "center", // location of the cross's center in the canvas
                         startY: "center",
-                        line_length: 30,
-                        line_width: 5,
+                        line_length: height * 0.1 / 1, // 30
+                        line_width: height * 0.1 / 9, // 5
                         line_color: 'white', // You can use the HTML color name instead of the HEX color.
                         show_start_time: 500,
                         show_end_time: 1100// ms after the start of the trial
@@ -21,18 +26,19 @@ function getTrial(sort = 0) {
                             return jsPsych.timelineVariable("img", true);
                         },
                         startX: "center", // location of the cross's center in the canvas
-                        startY: $(document).outerHeight() / 2 - 128 * 0.8 - 50,
+                        startY: height * 0.25,
                         show_start_time: 1000, // ms after the start of the trial
                         show_end_time: 1100,
-                        scale: 0.8
+                        scale: (height * 0.4) / 257
                     }, {
                         obj_type: 'text',
                         startX: "center",
-                        startY: $(document).outerHeight() / 2 + 100,
+                        startY: height - (height * 0.2) / 2 - height * 0.25,
+                        text_space: 0,
                         content: function () {
                             return jsPsych.timelineVariable("word", true);
                         },
-                        font: (50).toString() + "px 'Arial'",
+                        font: (height * 0.1).toString() + "px 'Arial'",
                         text_color: 'white',
                         show_start_time: 1000, // ms after the start of the trial
                         show_end_time: 1100
@@ -52,9 +58,38 @@ function getTrial(sort = 0) {
             sessionStorage.setItem("tmpTime", tmpTime);
             return tmpTime;
         }, // 刺激呈现时间
-        background_color: "grey", // 背景灰色
-        on_load:function() { 
+        on_load: function() { 
             sessionStorage.setItem("trialStart", jsPsych.totalTime());
+            $("canvas").attr("data-start-time", performance.now());
+            $("canvas").on("touchstart", function(e) { 
+                let endTime = performance.now();
+                let startTime = parseInt($("canvas").attr("data-start-time"));
+                let c = e.originalEvent.touches;
+                // console.log("canvas", e.originalEvent.touches);
+                // n is left
+                // m is right
+                if (endTime - startTime >= 1100) { 
+                    if(c[0].clientX < $(document).width() / 2) {
+                        jsPsych.pluginAPI.clearAllTimeouts();
+                        jsPsych.finishTrial({
+                            rt: endTime - startTime - 1100,
+                            correctResp: answer[0] == "n" ? "left" : "right",
+                            subjResp: "left",
+                            acc: answer[0] == "n" ? 1 : 0,
+                            key_press: "n"
+                        });
+                    } else { 
+                        jsPsych.pluginAPI.clearAllTimeouts();
+                        jsPsych.finishTrial({
+                            rt: endTime - startTime - 1100,
+                            correctResp: answer[0] == "n" ? "left" : "right",
+                            subjResp: "right",
+                            acc: answer[0] == "m" ? 1 : 0,
+                            key_press: "m"
+                        });
+                    }
+                }
+            });
         },
         on_finish: function (data) {
             trialNum += 1;
@@ -73,8 +108,9 @@ function getTrial(sort = 0) {
                 data.characterNameEn = wordEn[jsPsych.timelineVariable("word", true)];
             }
             data.condition = jsPsych.timelineVariable("condition", true);
-            data.correctResp = data.condition === "match" ? answer[0] : answer[1]; // 对的按键
-            data.subjResp = data.key_press; // 被试按键
+
+            data.correctResp = data.correctResp; // 对的按键
+            data.subjResp = data.subjResp; // 被试按键
 
             data.blockType = sessionStorage.getItem("type"); // 反应类别
             data.blockNum = blockNum;
@@ -114,6 +150,31 @@ function getPrac(timeVar, pracNum, pracAcc) {
                 button_label_next: "继续",
                 on_finish: function () {
                     $("body").css("cursor", "none");
+                    resize = function() { };
+                },
+                on_load: function () { 
+                    let a = function () {
+                        let height = $("#displayBox").height() * 0.9;
+                        let width = $("#displayBox").width() * 0.9;
+                         $(".header").css({
+                             fontSize: `${Math.min(height * 0.05, width / 27)}px`
+                         });
+                         $("p").css({
+                             margin: "0 0",
+                             lineHeight: `1.5em`
+                         });
+                         $(".footer").css({
+                            fontSize: `${Math.min(height * 0.05, width / 10)}px`
+                        });
+                        $(".key").css({
+                            fontSize: `${Math.min(height * 0.03, width / 22)}px`
+                        });
+                        $(".box").css({
+                            height: `${Math.min(height * 0.7)}px`
+                        });
+                    }
+                    a();
+                    resize = a;
                 }
             }],
             conditional_function: function () {
@@ -149,11 +210,19 @@ function getPrac(timeVar, pracNum, pracAcc) {
                     return `
                     <p>你的正确率为：${acc * 100}%</p>
                     <p>你的平均反应时为：${rt} ms</p>
-                    <p>接下来是休息时间，当你结束休息后，你可以点击 结束休息 按钮或者按 空格键 继续</p>
-                    <p>您当前休息了<span id="iii">150</span>秒</p>`
+                    <p>接下来是休息时间，当你结束休息后，你可以点击 结束休息 按钮</p>
+                    <p>我们建议你继续休息<span id="iii">150</span>秒</p>`
                 },
                 choices: ["结束休息"],
                 on_load: function () {
+                    let a = function() { 
+                        $("p").css({
+                            fontSize: `${$("#displayBox").width() * 0.9 / 40 }px`
+                        });
+                    }
+                    a();
+                    resize = a;
+
                     $("body").css("cursor", "default");
                     $(document.body).keypress(function (a) {
                         if (a.originalEvent.key == " ") {
@@ -163,13 +232,14 @@ function getPrac(timeVar, pracNum, pracAcc) {
                     let tmpTime = setInterval(function () {
                         $("#iii").text(parseInt($("#iii").text()) - 1);
                         if (parseInt($("#iii").text()) < 1) {
-                            $("#iii").parent().text("当前限定休息时间已到达，如果还未到达状态，请继续休息");
+                            $("#iii").parent().text("当前建议休息时间已到达，如果还未休息完毕，请继续休息");
                             clearInterval(parseInt(sessionStorage.getItem("tmpTime")));
                         }
                     }, 1000);
                     sessionStorage.setItem("tmpInter", tmpTime);
                 },
                 on_finish: function () {
+                    resize = function() { };
                     $(document.body).unbind();
                     clearInterval(parseInt(sessionStorage.getItem("tmpInter")));
                 }
@@ -223,6 +293,31 @@ function getFormal(timeVar, formNum) {
                 button_label_next: "继续",
                 on_finish: function () {
                     $("body").css("cursor", "none");
+                    resize = function() { };
+                },
+                on_load: function() { 
+                    let a = function() { 
+                        let height = $("#displayBox").height() * 0.9;
+                        let width = $("#displayBox").width() * 0.9;
+                         $(".header").css({
+                             fontSize: `${Math.min(height * 0.05, width / 27)}px`
+                         });
+                         $("p").css({
+                             margin: "0 0",
+                             lineHeight: `1.5em`
+                         });
+                         $(".footer").css({
+                            fontSize: `${Math.min(height * 0.05, width / 10)}px`
+                        });
+                        $(".key").css({
+                            fontSize: `${Math.min(height * 0.03, width / 22)}px`
+                        });
+                        $(".box").css({
+                            height: `${Math.min(height * 0.7)}px`
+                        });
+                    }
+                    a();
+                    resize = a;
                 }
             }],
             conditional_function: function () {
@@ -244,11 +339,19 @@ function getFormal(timeVar, formNum) {
                         <p>你当前还剩余${12 - blockNum}组实验</p>
                         <p>你的正确率为：${acc * 100}%</p>
                         <p>你的平均反应时为：${rt} ms</p>
-                        <p>接下来是休息时间，当你结束休息后，你可以点击 结束休息 按钮或者按 空格键 继续。</p>
+                        <p>接下来是休息时间，当你结束休息后，你可以点击 结束休息 按钮。</p>
                         <p>您当前休息了<span id="iii">150</span>秒</p>`
                 },
                 choices: ["结束休息"],
                 on_load: function () {
+                    let a = function() { 
+                        $("p").css({
+                            fontSize: `${$("#displayBox").width() * 0.9 / 40 }px`
+                        });
+                    }
+                    a();
+                    resize = a;
+
                     $("body").css("cursor", "default");
                     $(document.body).keypress(function (a) {
                         if (a.originalEvent.key == " ") {
@@ -305,7 +408,7 @@ function getMatchWord(arr) {
 // 指导语中按键部分
 function getKeys() {
     return `
-    <p class="key">如果二者匹配，请按 ${answer[0]} 键</p>
-    <p class="key">如果二者不匹配，请按 ${answer[1]} 键</p>
+    <p class="key">如果二者匹配，请按 ${answer[0] == "n" ? "左边的屏幕" : "右边的屏幕"}</p>
+    <p class="key">如果二者不匹配，请按 ${answer[0] == "n" ? "左边的屏幕" : "右边的屏幕"} 键</p>
     `;
 }

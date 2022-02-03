@@ -27,6 +27,24 @@
 </head>
 
 <body>
+    <div id="displayBox">
+    </div>
+    <script type="text/javascript">
+        var resize = function () { };
+        function resize1() {
+            $("#displayBox").css({
+                width: $(window).width() * 0.90,
+                height: $(window).height() * 0.90,
+                margin: `${$(window).height() * 0.05}px ${$(window).width() * 0.05}px`,
+                backgroundColor: "grey"
+            });
+            if(typeof(resize)=="function") { 
+                resize();
+            }
+        }
+        resize1();
+        $(window).on("resize", resize1);
+    </script>
 </body>
 
 </html>

@@ -13,9 +13,9 @@ load.js([
 ])
 
 let timeline = [];
-let version = "v6"; // 版本号
+let version = "v1"; // 版本号
 let info = {}; // 被试信息
-let subjectID = "sv02"; // 本次实验ID
+let subjectID = "sv03"; // 本次实验ID
 let recepetion = 2; // 循环次数
 let mismatch = [1, 2, 3]; // 不匹配 任务数量
 
@@ -100,23 +100,30 @@ timeline.push(
         </style>
         <p class="full_title">欢迎参与我们的实验</p>
         <p class="full_instruction"><单击下方 继续 进入实验程序></p>
+        <br/>
         <p class="full_lab">Mupsy在线实验室</p>
+        <br/>
         `,
         button_label: "继续",
         on_load: function() { 
-            let height = $("body").height() * 0.75;
-            let width = $("body").width() * 0.75;
-            $(".full_title").css({
-                fontSize: `${Math.min(width * 0.33, width / $(".full_title").text().length)}px`
-            });
-            $(".full_instruction").css({
-                fontSize: `${Math.min(width * 0.33, width / $(".full_instruction").text().length)}px`
-            });
-            $(".full_lab").css({
-                fontSize: `${Math.min(width * 0.07, width / $(".full_lab").text().length)}px`
-            });
+            let a = function() { 
+                let height = $("#displayBox").height() * 0.75;
+                let width = $("#displayBox").width() * 0.75;
+                $(".full_title").css({
+                    fontSize: `${Math.min(height * 0.33, width / $(".full_title").text().length)}px`
+                });
+                $(".full_instruction").css({
+                    fontSize: `${Math.min(height * 0.33, width / $(".full_instruction").text().length)}px`
+                });
+                $(".full_lab").css({
+                    fontSize: `${Math.min(height * 0.07, width / $(".full_lab").text().length)}px`
+                });
+            }
+            resize = a;
         },
         on_finish: function () {
+            resize = function() { };
+
             landScape();
             if (window.orientation === 180 || window.orientation === 0) $("#orientLayer")[0].style.display = "block";
             window.addEventListener("onorientationchange" in window ? "orientationchange" : "resize", function () {
@@ -192,9 +199,34 @@ timeline.push(
         stimulus: "<p class='head'>接下来，请你记住下面的联结:</p>" + getMatchWord(sti.match) + "<p class='footer'>然后你会需要回答一些问题，准备好了请点击 继续 </p>",
         choices: ["继续"],
         on_finish: function () {
+            resize = function() { };
             blockNum = 1;
             trialNum = 0;
             sessionStorage.setItem("errorStudy", 0);
+        },
+        on_load: function() { 
+            let a = function () {
+                let height = $("#displayBox").height() * 0.9;
+                let width = $("#displayBox").width() * 0.9;
+                 $(".header").css({
+                     fontSize: `${Math.min(height * 0.05, width / 27)}px`
+                 });
+                 $("p").css({
+                     margin: "0 0",
+                     lineHeight: `1.5em`
+                 });
+                 $(".footer").css({
+                    fontSize: `${Math.min(height * 0.05, width / 10)}px`
+                });
+                $(".key").css({
+                    fontSize: `${Math.min(height * 0.03, width / 22)}px`
+                });
+                $(".box").css({
+                    height: `${Math.min(height * 0.7)}px`
+                });
+            }
+            a();
+            resize = a;
         }
     }, {
         timeline: [{
@@ -203,9 +235,34 @@ timeline.push(
                 stimulus: "<p class='head'>注意，错误次数过多，请你仔细记住下面的联结:</p>" + getMatchWord(sti.match) + "<p class='footer'>然后你会需要回答一些问题，准备好了请点击 继续 </p>",
                 choices: ["继续"],
                 on_finish: function () {
+                    resize = function() { };
                     blockNum += 1;
                     trialNum = 0;
                     sessionStorage.setItem("errorStudy", 0);
+                },
+                on_load: function() { 
+                    let a = function () {
+                        let height = $("#displayBox").height() * 0.9;
+                        let width = $("#displayBox").width() * 0.9;
+                         $(".header").css({
+                             fontSize: `${Math.min(height * 0.05, width / 27)}px`
+                         });
+                         $("p").css({
+                             margin: "0 0",
+                             lineHeight: `1.5em`
+                         });
+                         $(".footer").css({
+                            fontSize: `${Math.min(height * 0.05, width / 10)}px`
+                        });
+                        $(".key").css({
+                            fontSize: `${Math.min(height * 0.03, width / 22)}px`
+                        });
+                        $(".box").css({
+                            height: `${Math.min(height * 0.7)}px`
+                        });
+                    }
+                    a();
+                    resize = a;
                 }
             }],
             conditional_function: function () {
@@ -219,11 +276,27 @@ timeline.push(
         }, {
             type: "html-button-response",
             stimulus: function () {
-                return "<p class='content'><img src='" + jsPsych.timelineVariable("img", true) + "' ></p><p class='content' style='margin-block: 50px'>+</p>";
+                return "<p class='content'><img src='" + jsPsych.timelineVariable("img", true) + "' ></p> \
+                <p class='content' style='margin: 0'>+</p>";
             },
             choices: title["tag"],
             on_load: function () {
-                $("#jspsych-content").append("<p class='content' style='margin-block: 50px'>选择与图形对应的人物标签</p>")
+                $("#jspsych-content").append("<p class='content' style='margin: 50px 0 0 0'>选择与图形对应的人物标签</p>");
+                let a = function() { 
+                    let height = $("#displayBox").height() * 0.9;
+                    let width = $("#displayBox").width() * 0.9;
+                    $(".content img").css({
+                        transform: `scale(${(height * 0.4) / 257}, ${(height * 0.4) / 257}) translateZ(0)`
+                    });
+                    $(".content")[0].style.height = `${height * 0.4}px`;
+                    $(".content")[1].style.height = `${height * 0.2}px`;
+                    $(".content")[2].style.fontSize = `${Math.min(height * 0.07, width / 15)}px`;
+                    $(".content")[2].style.margin = `${height * 0.05}px 0 0 0`;
+                    $(".content")[2].style.height = `${height * 0.08}px`;
+
+                }
+                a();
+                resize = a;
             },
             on_finish: function (data) {
                 trialNum += 1;
@@ -241,6 +314,8 @@ timeline.push(
                 data.characterNameEn = wordEn[jsPsych.timelineVariable("word", true)];
                 data.save = true;
                 // console.log(tags[data.response], jsPsych.timelineVariable("word", true));
+
+                resize = function() { };
             }
         }, {
             timeline: [{
@@ -250,7 +325,7 @@ timeline.push(
                     let acc = data.select("acc").mean();
                     let rt = data.select("rt").mean();
                     return `<p>你的正确率为：${acc * 100}%</p>
-                    <p>接下来是休息时间，当你结束休息后，你可以点击 结束休息 按钮或者按 空格键 继续</p>`
+                    <p>接下来是休息时间，当你结束休息后，你可以点击 结束休息 按钮</p>`
                 },
                 choices: ["结束休息"],
                 on_load: function () {
@@ -297,6 +372,7 @@ timeline.push(
 
 mupsyStart({
     timeline: timeline,
+    display_element: document.querySelector("#displayBox"),
     on_finish: function () {
         let msg = "<p>感谢你参与本次实验，本次实验到这里就结束了</p> \
                 <p>请你手动通过 ESC 键退出全屏后关闭本页面</p>";

@@ -30,13 +30,14 @@ a.innerHTML = `
     margin: 0 auto;
 }
 
-.key {}
+.key { 
+    display: inline;
+}
 
 .content { 
     font-size: 35px;
     margin: 0px;
     padding: 0px;
-    height: 100px;
 }
 
 .content img {
