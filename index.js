@@ -185,13 +185,15 @@ timeline.push(
         $.ajax({
             url: "/common/recevice.php",
             type: "POST",
-            data: "",
-            id: `${subjectID + goOn.toString().padStart(4, "0")}_${version}_day${day}`,
-            path: (function () {
-                let p = window.location.pathname.split("/");
-                p.pop();
-                return p.join("/");
-            })()
+            data: {
+                data: "",
+                id: `${info["subj_idx"]}_${version}_day${day}`,
+                path: (function () {
+                    let p = window.location.pathname.split("/");
+                    p.pop();
+                    return p.join("/");
+                })()
+            }
         })
     }
 }, {
