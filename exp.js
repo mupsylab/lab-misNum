@@ -73,7 +73,11 @@ function getTrial(sort = 0) {
                         jsPsych.pluginAPI.clearAllTimeouts();
                         jsPsych.finishTrial({
                             rt: endTime - startTime - 1100,
-                            correctResp: answer[0] == "n" ? "left" : "right",
+                            correctResp: (
+                                (jsPsych.timelineVariable("condition", true) == "match" && answer[0] == "n") ? "left" : (
+                                    jsPsych.timelineVariable("condition", true) == "mismatch" && answer[1] == "n" ? "left" : "right"
+                                )
+                            ),
                             subjResp: "left",
                             acc: answer[0] == "n" ? 1 : 0,
                             key_press: "n"
@@ -82,8 +86,11 @@ function getTrial(sort = 0) {
                         jsPsych.pluginAPI.clearAllTimeouts();
                         jsPsych.finishTrial({
                             rt: endTime - startTime - 1100,
-                            correctResp: answer[0] == "n" ? "left" : "right",
-                            subjResp: "right",
+                            correctResp: (
+                                (jsPsych.timelineVariable("condition", true) == "match" && answer[0] == "n") ? "left" : (
+                                    jsPsych.timelineVariable("condition", true) == "mismatch" && answer[1] == "n" ? "left" : "right"
+                                )
+                            ),                            subjResp: "right",
                             acc: answer[0] == "m" ? 1 : 0,
                             key_press: "m"
                         });
@@ -409,6 +416,6 @@ function getMatchWord(arr) {
 function getKeys() {
     return `
     <p class="key">如果二者匹配，请按 ${answer[0] == "n" ? "左边的屏幕" : "右边的屏幕"}</p>
-    <p class="key">如果二者不匹配，请按 ${answer[0] == "n" ? "左边的屏幕" : "右边的屏幕"} 键</p>
+    <p class="key">如果二者不匹配，请按 ${answer[1] == "n" ? "左边的屏幕" : "右边的屏幕"} 键</p>
     `;
 }
